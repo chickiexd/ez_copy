@@ -233,23 +233,45 @@ func get_path() string {
 
 func completer(d prompt.Document) []prompt.Suggest {
 	text := d.TextBeforeCursor()
-	dir := filepath.Dir(text)
-	if dir == "." || dir == "/" || dir == "" {
-		dir = "/"
+	text = filepath.Clean(text)
+	if len(text) <= 2 && !strings.Contains(text, string(os.PathSeparator)) {
+		return suggestDrives()
 	}
-	base := filepath.Base(text)
+	dir := text
+	info, err := os.Stat(dir)
+	if err != nil || !info.IsDir() {
+		dir = filepath.Dir(text)
+	}
 	files, err := os.ReadDir(dir)
 	if err != nil {
 		return nil
 	}
+	base := filepath.Base(text)
 	suggestions := []prompt.Suggest{}
 	for _, file := range files {
 		name := file.Name()
-		if strings.HasPrefix(name, base) && file.IsDir() {
+		if strings.HasPrefix(strings.ToLower(name), strings.ToLower(base)) {
+			suffix := ""
+			if file.IsDir() {
+				suffix = string(os.PathSeparator)
+			}
 			suggestions = append(suggestions, prompt.Suggest{
-				Text: filepath.Join(dir, name) + string(os.PathSeparator),
+				Text: filepath.Join(dir, name) + suffix,
 			})
 		}
 	}
 	return suggestions
+}
+
+func suggestDrives() []prompt.Suggest {
+	drives := []prompt.Suggest{}
+	for c := 'A'; c <= 'Z'; c++ {
+		drive := fmt.Sprintf("%c:\\", c)
+		if _, err := os.Stat(drive); err == nil {
+			drives = append(drives, prompt.Suggest{
+				Text: drive,
+			})
+		}
+	}
+	return drives
 }
