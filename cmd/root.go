@@ -89,7 +89,7 @@ func ez_copy(dry_run bool, debug bool) {
 	filteredFiles := []string{}
 	if filter != "" {
 		for _, file := range mkvFiles {
-			if strings.Contains(filepath.Base(file), filter) {
+			if strings.Contains(filepath.Base(file), filter) && !strings.Contains(filepath.Base(file), "sample") {
 				filteredFiles = append(filteredFiles, file)
 			}
 		}
