@@ -9,6 +9,7 @@ import (
 
 	prompt "github.com/c-bata/go-prompt"
 	"github.com/chickiexd/ez_copy/logger"
+	// "github.com/chickiexd/ez_copy/utils"
 	"github.com/ktr0731/go-fuzzyfinder"
 	"github.com/spf13/cobra"
 )
@@ -56,9 +57,12 @@ func init() {
 	rootCmd.Flags().BoolP("debug", "d", false, "Enable debug mode")
 }
 
+var DefaultDownloadPath string
+var DefaultDestinationPath string
+
 func ez_copy(dry_run bool, debug bool) {
 	fmt.Println("Insert download path:")
-	download_path := get_path()
+	download_path := get_path(DefaultDownloadPath)
 	fmt.Println("Download path:", download_path)
 	var mkvFiles []string
 	err := filepath.WalkDir(download_path, func(path string, d os.DirEntry, err error) error {
@@ -102,7 +106,7 @@ func ez_copy(dry_run bool, debug bool) {
 	}
 
 	fmt.Println("Insert destination path:")
-	destination_path := get_path()
+	destination_path := get_path(DefaultDestinationPath)
 	fmt.Println("Destination path:", destination_path)
 	dirName := prompt.Input("Insert destination directory name: ", completer)
 	if dirName == "" {
@@ -216,10 +220,11 @@ func search_mkv_files(items []string) (string, error) {
 	return items[idx], nil
 }
 
-func get_path() string {
+func get_path(initialPath string) string {
 	fullPath := prompt.Input("> ", completer,
 		prompt.OptionTitle("path input"),
 		prompt.OptionPrefixTextColor(prompt.Yellow),
+		prompt.OptionInitialBufferText(initialPath),
 		prompt.OptionAddKeyBind(prompt.KeyBind{
 			Key: prompt.ControlC,
 			Fn: func(buf *prompt.Buffer) {

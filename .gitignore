@@ -43,6 +43,7 @@ Godeps/
 .env.*
 *.env
 *.env.*
+Makefile
 
 # Secret files
 *.pem
